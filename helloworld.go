@@ -3,25 +3,26 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
-	"math/rand"
 )
 
 type Log struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	l:= &Log{}
+	l := &Log{}
 	l.Info("Hello world received a request.")
 	target := os.Getenv("TARGET")
 	if target == "" {
 		target = "World"
 	}
-
 	rand.Seed(time.Now().Unix())
-
+	for k, v := range r.Header {
+		fmt.Fprintf(w, "%s : %s \n", k, v)
+	}
 	fmt.Fprintf(w, "Hello %s!\n", target)
 
 	if rand.Intn(10) < 4 {
@@ -33,7 +34,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	l:= &Log{}
+	l := &Log{}
 	l.Info("Hello world sample started.")
 
 	http.HandleFunc("/", handler)
@@ -48,33 +49,32 @@ func main() {
 	}
 }
 
-func (log *Log) Infof(format string, a ...interface{})  {
+func (log *Log) Infof(format string, a ...interface{}) {
 	log.log("INFO", format, a...)
 }
 
-func (log *Log) Info(msg string)  {
+func (log *Log) Info(msg string) {
 	log.log("INFO", "%s", msg)
 }
 
-func (log *Log) Errorf(format string, a ...interface{})  {
+func (log *Log) Errorf(format string, a ...interface{}) {
 	log.log("ERROR", format, a...)
 }
 
-func (log *Log) Error(msg string)  {
+func (log *Log) Error(msg string) {
 	log.log("ERROR", "%s", msg)
 }
 
-func (log *Log) Fatalf(format string, a ...interface{})  {
+func (log *Log) Fatalf(format string, a ...interface{}) {
 	log.log("FATAL", format, a...)
 }
 
-func (log *Log) Fatal(msg string)  {
+func (log *Log) Fatal(msg string) {
 	log.log("FATAL", "%s", msg)
 }
 
-func (log *Log) log(level, format string, a ...interface{})  {
+func (log *Log) log(level, format string, a ...interface{}) {
 	var cstSh, _ = time.LoadLocation("Asia/Shanghai")
 	ft := fmt.Sprintf("%s %s %s\n", time.Now().In(cstSh).Format("2006-01-02 15:04:05"), level, format)
 	fmt.Printf(ft, a...)
 }
-
